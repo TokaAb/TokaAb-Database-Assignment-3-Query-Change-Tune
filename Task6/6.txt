@@ -1,0 +1,120 @@
+# Task 6 — Reading the Plan
+
+--Expected Operators
+
+Before running the query, I expected these operators:
+
+- TOP: To return only 15 rows.
+-Sort: To sort the results by Remaining DESC.
+- Join: To connect Invoices with StudentProfiles.
+- Index Seek or Scan: To read data from the tables.
+I expected these operators because of TOP, ORDER BY and INNER JOIN in the query.
+
+
+
+-- Actual Execution Statistics
+
+- Logical Reads: Pages read from memory.
+- Physical Reads: Pages read from disk.
+- Scan Count: Number of scan or seek operations started.
+
+The query made 3007 logical reads. Most reads were from Invoices. There were no physical reads.
+
+Statistics TIME:
+
+- CPU Time = 62 ms.
+- Elapsed Time = 22 ms.
+
+CPU Time is the time used by the processor. Elapsed Time is the actual time taken to finish the query.
+
+The query returned 15 rows and finished in 22 ms.
+
+### 3. Actual Execution Plan
+
+The actual plan shows these operators:
+
+--Clustered Index Scan — Invoices
+- Cost: 68%
+- Actual rows: 50,427
+- Estimated rows: 43,532
+
+SQL Server reads the Invoices table using its clustered index. It chose Scan because it needed to check many invoices, and there was no suitable index for this query.
+
+-- Compute Scalar
+
+- Cost: 0%
+It calculates values like Remaining using TotalAmount - PaidAmount.
+
+-- Sort
+- Cost: 29%
+- Actual rows: 111
+- Estimated rows: 15
+
+It sorts the results by Remaining DESC. SQL Server needs this because of ORDER BY.
+
+-- Nested Loops (Inner Join)
+- Cost: 0%
+- Actual rows: 111
+- Estimated rows: 15
+
+It joins Invoices with Users. SQL Server uses this method to find the matching student for each invoice.
+
+-- Clustered Index Seek — Users
+- Cost: 4%
+- Actual rows: 111
+- Estimated rows: 31
+
+It searches for the matching student using the primary key index on Users. Seek is useful here because SQL Server can find a specific student by ID.
+
+--Parallelism (Gather Streams)
+- Cost: 1%
+- Actual rows: 15
+
+It collects rows from parallel threads into one result stream.
+
+-- TOP
+- Cost: 0%
+- Actual rows: 15
+- Estimated rows: 15
+
+It returns only the first 15 rows after sorting.
+
+--Compute Scalar
+- Cost: 0%
+
+It calculates the final values needed in the SELECT list, including the Urgency value.
+
+-- SELECT
+- Cost: 0%
+
+It returns the final result to the user.
+
+--Important Numbers
+
+- Query Cost = 100%: This query represents 100% of the batch cost.
+- 68%: Cost of Clustered Index Scan.
+- 29%: Cost of Sort.
+- 4%: Cost of Clustered Index Seek.
+- 1%: Cost of Parallelism.
+
+These percentages are estimated costs, not actual execution time.
+
+The actual and estimated rows are different in some operators. For example, Sort processed 111 rows instead of the estimated 15 rows.
+
+--Where Was My Guess Wrong?
+
+I expected an Index Seek on Invoices, but SQL Server used Clustered Index Scan.
+
+I also expected a Join, and SQL Server actually used Nested Loops.
+
+For Users, SQL Server used Clustered Index Seek, which was expected as a possible access method.
+
+I expected TOP and Sort, and both appeared in the actual plan.
+
+--Conclusion
+
+The query returned 15 rows successfully.
+
+The biggest cost was Clustered Index Scan on Invoices (68%), followed by Sort (29%).
+
+The execution plan also showed that SQL Server suggested a new index on DueAtUtc to help improve performance.

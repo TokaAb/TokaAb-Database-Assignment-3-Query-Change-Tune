@@ -1,0 +1,7 @@
+We should use Numbers (INT or BIGINT) for normal database tables because they use less storage and provide better performance for indexing and searching.
+
+We should use GUIDs (UNIQUEIDENTIFIER) when we work with multiple databases or distributed systems because they can be generated independently and reduce ID conflicts.
+
+The main disadvantage of GUIDs is that they use more storage and can make indexes larger and slower.
+
+**Conclusion: Numbers are better for performance and storage, while GUIDs are better for distributed systems and global uniqueness.
